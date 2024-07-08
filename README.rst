@@ -1,17 +1,17 @@
-pyeviews: EViews & Python
+py2eviews: EViews & Python
 ==========================
 
-The purpose of the **pyeviews** package is to make it easier for `EViews <http://www.eviews.com>`_ and Python to talk to each other, so Python programmers can use the econometric engine of EViews directly from Python.  This package uses COM to transfer data between Python and EViews.  (For more information on COM and EViews, take a look at our `whitepaper on the subject <http://www.eviews.com/download/whitepapers/EViews_COM_Automation.pdf>`_.)
+The purpose of the **py2eviews** package is to make it easier for `EViews <http://www.eviews.com>`_ and Python to talk to each other, so Python programmers can use the econometric engine of EViews directly from Python.  This package uses COM to transfer data between Python and EViews.  (For more information on COM and EViews, take a look at our `whitepaper on the subject <http://www.eviews.com/download/whitepapers/EViews_COM_Automation.pdf>`_.)
 
 Here's a simple example going from Python to EViews.  We're going to use the popular Chow-Lin interpolation routine in EViews using data created in Python.  Chow-Lin interpolation is a regression-based technique to transform low-frequency data (in our example, annual) into higher-frequency data (in our example, quarterly).  It has the ability to use a higher-frequency series as a pattern for the interpolated series to follow.   The quarterly interpolated series is chosen to match the annual benchmark series in one of four ways: first (the first quarter value of the interpolated series matches the annual series), last (same, but for the fourth quarter value), sum (the sum of the first through fourth quarters matches the annual series), and average (the average of the first through fourth quarters matches the annual series).
 
 We're going to create two series in Python using the time series functionality of the **pandas** package, transfer it to EViews, perform Chow-Lin interpolation on our series, and bring it back into Python.  The data are taken from [BLO2001]_ in an example originally meant for Denton interpolation.
 
-*   Install the **pyeviews** package using your method of choice.  For example, head over to the **pyeviews** `package <https://pypi.python.org/pypi/pyeviews>`_ at the `Python Package Index <https://pypi.python.org/pypi>`_ and at a Windows command prompt:
+*   Install the **py2eviews** package using your method of choice.  For example, head over to the **py2eviews** `package <https://pypi.python.org/pypi/py2eviews>`_ at the `Python Package Index <https://pypi.python.org/pypi>`_ and at a Windows command prompt:
 
 :: 
 
-    $ pip install pyeviews
+    $ pip install py2eviews
 
 Or, download the package, navigate to your installation directory, and use:
 
@@ -19,7 +19,7 @@ Or, download the package, navigate to your installation directory, and use:
 
     $ python setup.py install 
 
-For more details on installation, see our `whitepaper <http://www.eviews.com/download/whitepapers/pyeviews.pdf>`_.
+For more details on installation, see our `whitepaper <http://www.eviews.com/download/whitepapers/py2eviews.pdf>`_.
 
 *	Start python and create two time series using pandas.  We'll call the annual series "benchmark" and the quarterly series "indicator":
 
@@ -32,16 +32,16 @@ For more details on installation, see our `whitepaper <http://www.eviews.com/dow
     >>> dtsq = pa.date_range('1998q1', periods = 12, freq = 'Q')
     >>> indicator = pa.Series([98.2, 100.8, 102.2, 100.8, 99., 101.6, 102.7, 101.5, 100.5, 103., 103.5, 101.5], index = dtsq, name = 'indicator')
     
-*	Load the **pyeviews** package and create a custom COM application object so we can customize our settings.  Set `showwindow` (which displays the EViews window) to True.  Then call the `PutPythonAsWF` function to create pages for the benchmark and indicator series:
+*	Load the **py2eviews** package and create a custom COM application object so we can customize our settings.  Set `showwindow` (which displays the EViews window) to True.  Then call the `PutPythonAsWF` function to create pages for the benchmark and indicator series:
 
 .. code-block:: python
 
-    >>> import pyeviews as evp
+    >>> import py2eviews as evp
     >>> eviewsapp = evp.GetEViewsApp(instance='new', showwindow=True)
     >>> evp.PutPythonAsWF(benchmark, app=eviewsapp)
     >>> evp.PutPythonAsWF(indicator, app=eviewsapp, newwf=False)
 
-Behind the scenes, **pyeviews** will detect if the DatetimeIndex of your **pandas** object (if you have one) needs to be adjusted to match EViews' dating customs.  Since EViews assigns dates to be the beginning of a given period depending on the frequency, this can lead to misalignment issues and unexpected results when calculations are performed.  For example, a DatetimeIndex with an annual 'A' frequency and a date of 2000-12-31 will be assigned an internal EViews date of 2000-12-01.  In this case, **pyeviews** will adjust the date to 2000-01-01 before pushing the data to EViews.
+Behind the scenes, **py2eviews** will detect if the DatetimeIndex of your **pandas** object (if you have one) needs to be adjusted to match EViews' dating customs.  Since EViews assigns dates to be the beginning of a given period depending on the frequency, this can lead to misalignment issues and unexpected results when calculations are performed.  For example, a DatetimeIndex with an annual 'A' frequency and a date of 2000-12-31 will be assigned an internal EViews date of 2000-12-01.  In this case, **py2eviews** will adjust the date to 2000-01-01 before pushing the data to EViews.
 
 *	Name the pages of the workfile:
 
@@ -118,13 +118,13 @@ Note that if you choose not to create a custom COM application object (the `GetE
         plt.title("Chow-Lin interpolation: \nannual sum of benchmarked = benchmark", fontsize=14)
         plt.show()
 
-.. image:: https://github.com/bexer/pyeviews/blob/master/example-python.png
+.. image:: https://github.com/eviews-support/py2eviews/blob/master/example-python.png
     :height: 100px
     :width: 200px
     :scale: 100 %
     :align: center
 
-For more information on the **pyeviews** package, including a list of functions, please take a look at our `whitepaper <http://www.eviews.com/download/whitepapers/pyeviews.pdf>`_ on the subject.
+For more information on the **py2eviews** package, including a list of functions, please take a look at our `whitepaper <http://www.eviews.com/download/whitepapers/py2eviews.pdf>`_ on the subject.
 
 References
 ----------

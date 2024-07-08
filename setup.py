@@ -16,8 +16,8 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 #    with open('LICENSE.txt') as f:
 #        return f.read()
         
-setup(name='pyeviews',
-      version='1.0.5',
+setup(name='py2eviews',
+      version='1.0.6',
       description='Data import/export and EViews function calls from Python',
       long_description=long_description,
       long_description_content_type='text/x-rst',
@@ -27,11 +27,11 @@ setup(name='pyeviews',
                    'Programming Language :: Python :: 3',
                    'Operating System :: Microsoft :: Windows'],
       keywords='eviews econometrics',
-      url='https://github.com/bexer/pyeviews',
-      author='IHS EViews',
-      author_email='pyeviews@yahoo.com',
+      url='https://github.com/eviews-support/py2eviews',
+      author='EViews_Support',
+      author_email='support@eviews.com',
       license='GPLv3',
-      packages=['pyeviews'],
+      packages=['py2eviews'],
       install_requires=['comtypes','numpy','pandas'],
       include_package_data=True,
       zip_safe=False)
