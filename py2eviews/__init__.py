@@ -1,4 +1,5 @@
-"""pyeviews: Use EViews directly from python."""
+"""py2eviews: Use EViews directly from python."""
+# version 1.0.6
 import fnmatch
 import gc
 import re
@@ -9,7 +10,7 @@ from comtypes import automation
 import numpy as np
 import pandas as pa
 
-_dist = get_distribution('pyeviews')
+_dist = get_distribution('py2eviews')
 __version__ = _dist.version
 
 # default app if users don't want to specify their own
@@ -47,7 +48,7 @@ def _BuildFromPandas(obj, newwf=True):
     # misaligned subtractions/additions of dates
     # - note that the DateOffset calculations (sometimes?) give performance warnings
     # fix with resample?
-    if freq_str == 'A':
+    if freq_str == 'A' or freq_str == 'YE' or freq_str == 'Y':
         dtr = pa.DatetimeIndex(obj + pa.DateOffset(years=-1, days=1), 
                                freq = "infer")
         return _BuildFromPandas(dtr, newwf)
@@ -55,7 +56,7 @@ def _BuildFromPandas(obj, newwf=True):
         dtr = pa.DatetimeIndex(obj - pa.tseries.offsets.BYearEnd() 
                                + pa.tseries.offsets.BDay(), freq = "infer")
         return _BuildFromPandas(dtr, newwf)
-    elif freq_str == 'Q':
+    elif freq_str == 'Q' or freq_str == 'QE':
         dtr = pa.DatetimeIndex(obj - pa.tseries.offsets.QuarterEnd() 
                                + pa.DateOffset(days=1), freq = "infer")
         return _BuildFromPandas(dtr, newwf)
@@ -103,12 +104,14 @@ def _BuildFromPandas(obj, newwf=True):
     time_max = str(obj.hour.max()) + ':' + \
                str(obj.minute.max()) + ':' + \
                str(obj.second.max())    
+    #print('freq_str: ' + freq_str)
+    #print('spacing: ' + spacing)
     # yearly
-    if (freq_str in ['AS', 'A', 'BAS', 'BA'] and \
+    if (freq_str in ['YS', 'Y', 'AS', 'A', 'BAS', 'BA'] and \
         spacing in ['2', '3', '4', '5', '6', '7', '8', '9', '10', '20']):
             # month alignment not allowed for multi-year freqs in EViews
             result = result + spacing + 'a ' + date_begin + date_end
-    elif (freq_str in ['AS', 'A', 'BAS', 'BA'] and not spacing):
+    elif (freq_str in ['YS', 'Y', 'AS', 'A', 'BAS', 'BA'] and not spacing):
         result = result + 'a' + freq_str_sp + date_begin + date_end
     # quarterly
     elif (freq_str in ['QS', 'Q', 'BQS', 'BQ'] and not spacing):
