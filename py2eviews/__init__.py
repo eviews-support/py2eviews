@@ -1,5 +1,5 @@
 """py2eviews: Use EViews directly from python."""
-# version 1.0.6
+# version 1.0.7 - updated dt_map to stop using 'AS' and use 'YS' instead
 import fnmatch
 import gc
 import re
@@ -308,13 +308,31 @@ def PutPythonAsWF(obj, app=None, newwf=True):
     else:
         raise ValueError('Unsupported type: ' + str(type(obj)))
 
+def smartsplit(text):
+    # Regular expression pattern to match quoted substrings or sequences of non-space characters
+    pattern = r'\"[^\"]*\"|\S+'
+    # Find all matches based on the pattern
+    parts = re.findall(pattern, text)
+    # Remove leading and trailing quotes from quoted substrings
+    parts = [part.strip('"') for part in parts]
+    return parts
+    
+def removeOld(text):
+    oldtext = 'compobj.dll is too old'
+    if oldtext in text:
+        lpos = text.find('(', 2)
+        rpos = text.rfind(')')
+        if lpos != -1 and rpos != -1:
+            return text[lpos + 1:rpos - 1]
+    return text
+    
 def GetWFAsPython(app=None, wfname='', pagename='', namefilter='*'):
     """Move EViews data to Python."""
     app = _GetApp(app)
     # EViews : pandas
     dt_map = {'D5':'B', '5':'B', 'D7':'D', '7':'D', 'D':'D',
               'W':'W', 'T':'10D', 'F':'2W', 'M':'MS', 'Q':'QS',
-              'S':'6M', 'A':'AS', 'Y':'AS',
+              'S':'6M', 'A':'YS', 'Y':'YS',
               'H':'H', 'Min':'T', 'Sec':'S'} # also 'D7':'D', 'Min':'min'
     # load the workfile 
     if wfname != '':
@@ -409,7 +427,7 @@ replicated in pandas.")
         dfr = pa.DataFrame(index = idx)
         data = dfr
     if ispanel:
-        panelids = app.Get("=@pageids").split()
+        panelids = smartsplit(app.Get("=@pageids"))
         if len(panelids) != 2:
             raise ValueError("EViews panel must have two id values, not " + len(panelids) + ".")
         data = pa.DataFrame(data = dfr.drop(panelids, axis = 'columns').to_numpy(),\
@@ -417,14 +435,20 @@ replicated in pandas.")
                             names = panelids), columns = dfr.columns.drop(panelids))
     # get all attribute names
     for var in names:
-        attrnames = app.Get('=@attrnames("*", "' + str(var) + '")').split()
+        attrnames = smartsplit(app.Get('=@attrnames("*", "' + str(var) + '")'))
+        #attrnames = app.Get('=@attrnames("*", "' + str(var) + '")').split()
+        #print(attrnames)
         if attrnames and not ispanel:
             attrvals = []
             for attr in attrnames:
                 tempvar = app.Get('=@getnextname("TEMP")') 
-                app.Run('string ' + str(tempvar) + ' = ' + str(var).strip() + '.@attr("' + str(attr) + '")')
-                attrvals.append(app.Get(str(tempvar)))
-                app.Run('delete ' + str(tempvar))
+                try:
+                    app.Run('string ' + str(tempvar) + ' = ' + str(var).strip() + '.@attr("' + str(attr) + '")')
+                    attrvals.append(app.Get(str(tempvar)))
+                    app.Run('delete ' + str(tempvar))
+                except Exception as e:
+                    print("\033[93m" + f"Warning: Failed to save series attribute due to: {removeOld(str(e))}" + "\033[0m")
+                    #pass # any exception is ignored
             data.attrs.update(dict(zip(attrnames, attrvals)))
     # close the workfile
     #app.Run("wfclose")   
